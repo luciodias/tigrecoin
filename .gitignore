@@ -23,6 +23,8 @@ cabal.project.local~
 .ghc.environment.*
 *.cabal
 
+.env
+
 .cabal-sandbox/
 cabal.sandbox.config
 cabal.project.local

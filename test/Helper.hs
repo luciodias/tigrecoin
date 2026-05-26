@@ -69,7 +69,7 @@ createTestPool = do
   mUrl <- lookupEnv "DATABASE_URL_TEST"
   let url = case mUrl of
         Just u  -> C.pack u
-        Nothing -> "postgres://localhost:5432/tigrecoin_test"
+        Nothing -> "postgres://postgres:postgres@localhost:5432/tigrecoin_test"
   createPool (connectPostgreSQL url) close 1 10 10
 
 destroyTestPool :: Pool Connection -> IO ()
