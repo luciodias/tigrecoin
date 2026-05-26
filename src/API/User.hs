@@ -1,13 +1,15 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
 module API.User where
 
+import Control.Monad.IO.Class (liftIO)
 import Data.Pool (withResource)
 import Data.Text (Text)
 import Data.UUID (UUID)
-import Servant (ServerT, (:>), (:<|>)(..), Get, Put, Delete, ReqBody, JSON, Capture, NoContent)
+import Servant (ServerT, (:>), (:<|>)(..), Get, Put, Delete, ReqBody, JSON, Capture, NoContent(..))
 
 import Types.AppM (AppM, throwAppError, getPool)
 import Types.Errors (AppError(..))
@@ -18,12 +20,14 @@ import Models.User (User(..), UserId(..), UpdateUserRequest(..), toUserResponse,
 type UserAPI =
   "users" :> Capture "id" UUID :> (
        Get    '[JSON] UserResponse
-  :<|> Put    '[JSON] UserResponse
+  :<|> ReqBody '[JSON] UpdateUserRequest :> Put '[JSON] UserResponse
   :<|> Delete '[JSON] NoContent
   )
 
-userServer :: AuthUser -> ServerT UserAPI AppM
-userServer authUser = getUser authUser :<|> updateUser authUser :<|> deleteUser authUser
+userServer authUser uuid =
+     getUser authUser uuid
+ :<|> updateUser authUser uuid
+ :<|> deleteUser authUser uuid
 
 getUser :: AuthUser -> UUID -> AppM UserResponse
 getUser _ uid = do

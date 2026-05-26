@@ -6,8 +6,9 @@ module App where
 
 import Control.Monad.Reader (runReaderT)
 import Network.Wai (Application)
-import Servant (ServerT, (:<|>)(..), Proxy(..), hoistServer, Context(..), EmptyContext)
-import Servant.Server.Experimental.Auth (AuthHandler, AuthProtect, mkAuthHandler, serveWithContext)
+import Servant ((:>), ServerT, (:<|>)(..), Proxy(..), Context(..), serveWithContextT)
+import Servant.API.Experimental.Auth (AuthProtect)
+import Servant.Server.Experimental.Auth (AuthHandler, mkAuthHandler)
 
 import Auth.Middleware (AuthUser, mkAuthMiddleware)
 import API.Auth (AuthAPI, authServer)
@@ -32,7 +33,7 @@ mkApp env =
       authHandler = mkAuthHandler (mkAuthMiddleware jwtSecret)
       context = authHandler :. EmptyContext
       nt appM = runReaderT appM env
-  in serveWithContext api context (hoistServer api nt server)
+  in serveWithContextT api context nt server
 
 server :: ServerT API AppM
 server =

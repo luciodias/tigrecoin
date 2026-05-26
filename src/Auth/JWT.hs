@@ -13,8 +13,8 @@ import Data.Time.Clock (NominalDiffTime)
 import qualified Data.Aeson as A
 import qualified Data.ByteString as BS
 import qualified Data.ByteString.Base64 as B64
+import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy as BL
-import qualified Data.Text.Encoding as TE
 
 data AuthClaims = AuthClaims
   { acUserId :: !Text
@@ -46,15 +46,15 @@ makeToken secret _expiry claims = do
 
 verifyToken :: ByteString -> ByteString -> Either Text AuthClaims
 verifyToken secret token =
-  case BS.split '.' token of
+  case C.split '.' token of
     [headerB64, payloadB64, sigB64] -> do
       let signingInput = headerB64 <> "." <> payloadB64
           expectedSig = hmacSHA256 secret signingInput
-      sig <- note "Invalid signature encoding" $ base64urlDecode sigB64
+      sig <- note "Invalid signature encoding" (base64urlDecode sigB64)
       if sig == expectedSig
-        then case A.decode (BL.fromStrict =<< base64urlDecode payloadB64) of
-          Nothing       -> Left "Invalid claims format"
-          Just claims   -> pure claims
+        then case base64urlDecode payloadB64 >>= decodeStrict of
+          Nothing     -> Left "Invalid claims format"
+          Just claims -> Right claims
         else Left "Signature verification failed"
     _ -> Left "Invalid JWT format"
 
@@ -62,23 +62,30 @@ hmacSHA256 :: ByteString -> ByteString -> ByteString
 hmacSHA256 key msg = convert (hmac key msg :: HMAC SHA256)
 
 base64urlEncode :: ByteString -> ByteString
-base64urlEncode = BS.filter (/= '=') . BS.map toUrl . B64.encode
+base64urlEncode = C.filter (/= '=') . C.map toUrl . B64.encode
   where
     toUrl '+' = '-'
     toUrl '/' = '_'
     toUrl c   = c
 
-base64urlDecode :: ByteString -> Either String ByteString
-base64urlDecode = B64.decode . addPadding . BS.map fromUrl
+base64urlDecode :: ByteString -> Maybe ByteString
+base64urlDecode = hush . B64.decode . addPadding . C.map fromUrl
   where
     fromUrl '-' = '+'
     fromUrl '_' = '/'
     fromUrl c   = c
-    addPadding b = b <> BS.replicate padLen '='
+    addPadding b = b <> BS.replicate padLen (fromIntegral $ fromEnum '=')
       where
         r = BS.length b `mod` 4
         padLen = if r == 0 then 0 else 4 - r
 
+decodeStrict :: FromJSON a => ByteString -> Maybe a
+decodeStrict = A.decode . BL.fromStrict
+
 note :: Text -> Maybe a -> Either Text a
 note _ (Just a) = Right a
 note e Nothing  = Left e
+
+hush :: Either a b -> Maybe b
+hush (Right b) = Just b
+hush (Left _)  = Nothing

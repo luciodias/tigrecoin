@@ -1,14 +1,18 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Models.Wallet where
 
-import Data.Aeson (FromJSON, ToJSON, (.=), object, parseJSON, withObject, (.:))
+import Data.Aeson (FromJSON(..), ToJSON(..), (.=), object, parseJSON, withObject, (.:))
 import Data.ByteString (ByteString)
 import Data.Time.Clock (UTCTime)
 import Data.UUID (UUID)
 import Database.PostgreSQL.Simple.FromField (FromField(..))
-import Database.PostgreSQL.Simple.FromRow (FromRow, field)
+import Database.PostgreSQL.Simple (FromRow(..))
+import Database.PostgreSQL.Simple.FromRow (field)
 import Database.PostgreSQL.Simple.ToField (ToField(..))
+import GHC.Generics (Generic)
 
 import qualified Data.UUID as UUID
 
@@ -27,9 +31,7 @@ data Wallet = Wallet
   , walletCreatedAt :: !UTCTime
   , walletUpdatedAt :: !UTCTime
   }
-
-instance FromRow Wallet where
-  fromRow = Wallet <$> field <*> field <*> field <*> field <*> field
+  deriving (Generic, FromRow)
 
 data WalletResponse = WalletResponse
   { wrespId      :: !UUID

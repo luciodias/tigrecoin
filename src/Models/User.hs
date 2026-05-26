@@ -1,15 +1,19 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Models.User where
 
-import Data.Aeson (FromJSON, ToJSON, (.=), (.:), object, parseJSON, withObject)
+import Data.Aeson (FromJSON(..), ToJSON(..), (.=), (.:), object, parseJSON, withObject)
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Time.Clock (UTCTime)
 import Data.UUID (UUID)
 import Database.PostgreSQL.Simple.FromField (FromField(..))
-import Database.PostgreSQL.Simple.FromRow (FromRow, field)
+import Database.PostgreSQL.Simple (FromRow(..))
+import Database.PostgreSQL.Simple.FromRow (field)
 import Database.PostgreSQL.Simple.ToField (ToField(..))
+import GHC.Generics (Generic)
 
 import qualified Data.UUID as UUID
 
@@ -30,9 +34,7 @@ data User = User
   , userCreatedAt   :: !UTCTime
   , userUpdatedAt   :: !UTCTime
   }
-
-instance FromRow User where
-  fromRow = User <$> field <*> field <*> field <*> field <*> field <*> field <*> field
+  deriving (Generic, FromRow)
 
 data RegisterRequest = RegisterRequest
   { regName     :: !Text

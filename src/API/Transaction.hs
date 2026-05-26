@@ -1,9 +1,11 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
 module API.Transaction where
 
+import Control.Monad.IO.Class (liftIO)
 import Data.Maybe (fromMaybe)
 import Data.Pool (withResource)
 import Data.Text (Text)
@@ -16,7 +18,7 @@ import Auth.Middleware (AuthUser(..))
 import Database.Queries.Transaction qualified as QTxn
 import Database.Queries.Wallet qualified as QWallet
 import Models.Transaction (Transaction(..), TransactionResponse(..), toTransactionResponse)
-import Models.Wallet (Wallet(..))
+import Models.Wallet (Wallet(..), WalletId(..))
 
 import qualified Data.Text as T
 import qualified Data.UUID as UUID

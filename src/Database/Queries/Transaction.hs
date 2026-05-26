@@ -2,6 +2,7 @@
 
 module Database.Queries.Transaction where
 
+import Control.Monad (void)
 import Data.Maybe (fromMaybe)
 import Data.Text (Text)
 import Data.UUID (UUID)
@@ -31,6 +32,6 @@ findTransactionById conn tid = do
     []    -> Nothing
 
 insertTransaction :: Connection -> Transaction -> IO ()
-insertTransaction conn txn = execute conn
+insertTransaction conn txn = void $ execute conn
   "INSERT INTO transactions (id, wallet_id, type, amount, description) VALUES (?, ?, ?, ?, ?)"
   (txnId txn, txnWalletId txn, txnType txn, txnAmount txn, txnDescription txn)

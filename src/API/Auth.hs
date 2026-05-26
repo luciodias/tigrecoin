@@ -1,4 +1,5 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
@@ -13,6 +14,7 @@ import Data.Time.Clock (getCurrentTime)
 import Data.UUID.V4 (nextRandom)
 import Servant (ServerT, (:>), (:<|>)(..), Post, ReqBody, JSON, NoContent(..))
 
+import Control.Monad.IO.Class (liftIO)
 import Types.AppM (AppM, throwAppError, getPool, getJwtSecret, getJwtExpiry)
 import Types.Errors (AppError(..))
 import Auth.JWT (AuthClaims(..), makeToken)

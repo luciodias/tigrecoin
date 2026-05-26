@@ -1,10 +1,13 @@
 {-# LANGUAGE DataKinds #-}
+{-# LANGUAGE ImportQualifiedPost #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeOperators #-}
 
 module API.Wallet where
 
+import Control.Monad.IO.Class (liftIO)
 import Data.Pool (withResource)
+import Data.Text (Text)
 import Data.Time.Clock (getCurrentTime)
 import Data.UUID (UUID)
 import Data.UUID.V4 (nextRandom)

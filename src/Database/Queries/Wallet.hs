@@ -2,6 +2,7 @@
 
 module Database.Queries.Wallet where
 
+import Control.Monad (void)
 import Data.Pool (withResource)
 import Data.Text (Text)
 import Data.UUID (UUID)
@@ -28,11 +29,11 @@ findWalletById conn wid = do
     []    -> Nothing
 
 insertWallet :: Connection -> Wallet -> IO ()
-insertWallet conn wallet = execute conn
+insertWallet conn wallet = void $ execute conn
   "INSERT INTO wallets (id, user_id, balance) VALUES (?, ?, ?)"
   (walletId wallet, walletUserId wallet, walletBalance wallet)
 
 updateBalance :: Connection -> UUID -> Double -> IO ()
-updateBalance conn wid amount = execute conn
+updateBalance conn wid amount = void $ execute conn
   "UPDATE wallets SET balance = balance + ?, updated_at = NOW() WHERE id = ?"
-  (amount, Only wid)
+  (amount, wid)

@@ -1,6 +1,11 @@
+{-# LANGUAGE DataKinds #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Auth.Middleware where
+
+import Servant.API.Experimental.Auth (AuthProtect)
+import Servant.Server.Experimental.Auth (AuthServerData)
 
 import Data.ByteString (ByteString)
 import Data.Text (Text)
@@ -10,12 +15,16 @@ import Servant (Handler, err401, errBody, throwError)
 import Auth.JWT (AuthClaims(..), verifyToken)
 
 import qualified Data.ByteString as BS
+import qualified Data.ByteString.Lazy as BL
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as TE
 
 data AuthUser = AuthUser
   { auUserId :: !Text
   , auRole   :: !Text
   }
+
+type instance AuthServerData (AuthProtect "jwt-auth") = AuthUser
 
 mkAuthMiddleware :: ByteString -> (Request -> Handler AuthUser)
 mkAuthMiddleware jwtSecret = \req -> do
@@ -40,5 +49,5 @@ parseBearer bs =
      then Just (BS.drop plen bs)
      else Nothing
 
-encodeText :: Text -> ByteString
-encodeText = BS.pack . T.unpack
+encodeText :: Text -> BL.ByteString
+encodeText = BL.fromStrict . TE.encodeUtf8

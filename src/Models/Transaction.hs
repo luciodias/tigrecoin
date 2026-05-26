@@ -1,16 +1,20 @@
+{-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE OverloadedStrings #-}
 
 module Models.Transaction where
 
-import Data.Aeson (ToJSON, (.=), object)
+import Data.Aeson (ToJSON(..), (.=), object)
 import Data.ByteString (ByteString)
 import Data.Text (Text)
 import Data.Time.Clock (UTCTime)
 import Data.UUID (UUID)
 import Database.PostgreSQL.Simple.FromField (FromField(..), returnError, ResultError(..))
-import Database.PostgreSQL.Simple.FromRow (FromRow, field)
+import Database.PostgreSQL.Simple (FromRow(..))
+import Database.PostgreSQL.Simple.FromRow (field)
 import Database.PostgreSQL.Simple.ToField (ToField(..), Action(Plain))
 import Database.PostgreSQL.Simple.Types (PGArray(..))
+import GHC.Generics (Generic)
 
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -59,9 +63,7 @@ data Transaction = Transaction
   , txnDescription :: !Text
   , txnCreatedAt   :: !UTCTime
   }
-
-instance FromRow Transaction where
-  fromRow = Transaction <$> field <*> field <*> field <*> field <*> field <*> field
+  deriving (Generic, FromRow)
 
 data TransactionResponse = TransactionResponse
   { trespId          :: !UUID
