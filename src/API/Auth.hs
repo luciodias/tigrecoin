@@ -15,7 +15,7 @@ import Servant (ServerT, (:>), (:<|>)(..), Post, ReqBody, JSON, NoContent(..))
 
 import Types.AppM (AppM, throwAppError, getPool, getJwtSecret, getJwtExpiry)
 import Types.Errors (AppError(..))
-import Auth.JWT (AuthClaims(..), makeJwk, makeToken)
+import Auth.JWT (AuthClaims(..), makeToken)
 import Database.Queries.User qualified as QUser
 import Database.Queries.Wallet qualified as QWallet
 import Models.User (User(..), UserId(..), RegisterRequest(..), LoginRequest(..))
@@ -85,9 +85,8 @@ login req = do
       if not valid
         then throwAppError $ Unauthorized "Invalid email or password"
         else do
-          let jwk = makeJwk secret
-              claims = AuthClaims (T.pack $ show $ unUserId $ userId user) (userRole user)
-          token <- liftIO $ makeToken jwk expiry claims
+          let claims = AuthClaims (T.pack $ show $ unUserId $ userId user) (userRole user)
+          token <- liftIO $ makeToken secret expiry claims
           pure $ TE.decodeUtf8 token
 
 hashPassword :: Text -> IO Text

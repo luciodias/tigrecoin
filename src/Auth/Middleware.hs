@@ -4,12 +4,10 @@ module Auth.Middleware where
 
 import Data.ByteString (ByteString)
 import Data.Text (Text)
-import Data.Text.Encoding (decodeUtf8')
 import Network.Wai (Request, requestHeaders)
 import Servant (Handler, err401, errBody, throwError)
-import Servant.Server.Experimental.Auth (AuthHandler, mkAuthHandler)
 
-import Auth.JWT (AuthClaims(..), Jwk, makeJwk, verifyToken)
+import Auth.JWT (AuthClaims(..), verifyToken)
 
 import qualified Data.ByteString as BS
 import qualified Data.Text as T
@@ -20,9 +18,7 @@ data AuthUser = AuthUser
   }
 
 mkAuthMiddleware :: ByteString -> (Request -> Handler AuthUser)
-mkAuthMiddleware jwtSecret =
-  let jwk = makeJwk jwtSecret
-  in \req -> do
+mkAuthMiddleware jwtSecret = \req -> do
     let mHeader = lookup "Authorization" (requestHeaders req)
     case mHeader of
       Nothing -> throwError $ err401 { errBody = "Missing Authorization header" }
@@ -31,7 +27,7 @@ mkAuthMiddleware jwtSecret =
         case token of
           Nothing -> throwError $ err401 { errBody = "Invalid Authorization format" }
           Just t  -> do
-            result <- liftIO $ verifyToken jwk t
+            result <- pure $ verifyToken jwtSecret t
             case result of
               Left err -> throwError $ err401 { errBody = encodeText err }
               Right claims -> pure $ AuthUser (acUserId claims) (acRole claims)
