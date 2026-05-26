@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "lsp": {
+    "haskell": {
+      "command": [
+        "haskell-language-server-wrapper",
+        "--lsp"
+      ],
+      "extensions": [".hs", ".lhs"],
+      "env": {
+        "LD_LIBRARY_PATH": "/usr/lib/ghc/lib/x86_64-linux-ghc-9.4.7"
+      }
+    }
+  }
+}

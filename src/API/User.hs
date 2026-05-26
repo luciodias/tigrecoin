@@ -1,0 +1,52 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeOperators #-}
+
+module API.User where
+
+import Data.Pool (withResource)
+import Data.Text (Text)
+import Data.UUID (UUID)
+import Servant (ServerT, (:>), (:<|>)(..), Get, Put, Delete, ReqBody, JSON, Capture, NoContent)
+
+import Types.AppM (AppM, throwAppError, getPool)
+import Types.Errors (AppError(..))
+import Auth.Middleware (AuthUser(..))
+import Database.Queries.User qualified as QUser
+import Models.User (User(..), UserId(..), UpdateUserRequest(..), toUserResponse, UserResponse)
+
+type UserAPI =
+  "users" :> Capture "id" UUID :> (
+       Get    '[JSON] UserResponse
+  :<|> Put    '[JSON] UserResponse
+  :<|> Delete '[JSON] NoContent
+  )
+
+userServer :: AuthUser -> ServerT UserAPI AppM
+userServer authUser = getUser authUser :<|> updateUser authUser :<|> deleteUser authUser
+
+getUser :: AuthUser -> UUID -> AppM UserResponse
+getUser _ uid = do
+  pool <- getPool
+  mUser <- liftIO $ withResource pool $ \conn -> QUser.findUserById conn uid
+  case mUser of
+    Nothing -> throwAppError $ NotFound "User not found"
+    Just user -> pure $ toUserResponse user
+
+updateUser :: AuthUser -> UUID -> UpdateUserRequest -> AppM UserResponse
+updateUser _ uid req = do
+  pool <- getPool
+  liftIO $ withResource pool $ \conn -> QUser.updateUser conn uid (updName req) (updEmail req)
+  mUser <- liftIO $ withResource pool $ \conn -> QUser.findUserById conn uid
+  case mUser of
+    Nothing -> throwAppError $ NotFound "User not found"
+    Just user -> pure $ toUserResponse user
+
+deleteUser :: AuthUser -> UUID -> AppM NoContent
+deleteUser authUser uid = do
+  if auRole authUser /= "admin"
+    then throwAppError $ Forbidden "Only admins can delete users"
+    else do
+      pool <- getPool
+      liftIO $ withResource pool $ \conn -> QUser.deleteUser conn uid
+      pure NoContent
