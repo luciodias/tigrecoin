@@ -1,3 +1,6 @@
 packages: .
 
+tests: True
+test-show-details: direct
+
 constraints: crypton < 1.0
