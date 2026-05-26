@@ -22,7 +22,7 @@ import Control.Monad (void)
 import Data.Aeson (object, (.=))
 import Data.ByteString (ByteString)
 import Data.IORef (IORef, newIORef, writeIORef, readIORef)
-import Data.Pool (Pool, withResource, destroyAllResources, createPool)
+import Data.Pool (Pool, withResource, destroyAllResources, newPool, defaultPoolConfig, setNumStripes)
 import Data.Text (Text)
 import Data.Time.Clock (NominalDiffTime)
 import Data.UUID (UUID)
@@ -70,7 +70,7 @@ createTestPool = do
   let url = case mUrl of
         Just u  -> C.pack u
         Nothing -> "postgres://postgres:postgres@localhost:5432/tigrecoin_test"
-  createPool (connectPostgreSQL url) close 1 10 10
+  newPool $ setNumStripes (Just 1) $ defaultPoolConfig (connectPostgreSQL url) close 10 10
 
 destroyTestPool :: Pool Connection -> IO ()
 destroyTestPool = destroyAllResources
