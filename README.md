@@ -73,6 +73,8 @@ tigrecoin/
 │   │       └── Transaction.hs   # SQL para transações
 │   ├── API/
 │   │   ├── Auth.hs              # POST /auth/register, /auth/login
+│   │   ├── Routes.hs            # Tipo da API Servant (compartilhado)
+│   │   ├── Swagger.hs           # Documentação OpenAPI (ToSchema, docsApp)
 │   │   ├── User.hs              # GET/PUT/DELETE /users/{id}
 │   │   ├── Wallet.hs            # GET /wallet, POST /wallet/deposit/withdraw
 │   │   └── Transaction.hs       # GET /transactions, /transactions/{id}
@@ -125,6 +127,15 @@ POST   /api/wallet/withdraw    → Sacar coins
 GET    /api/transactions       → Listar transações (paginado)
 GET    /api/transactions/{id}  → Detalhe da transação
 ```
+
+## Documentação Interativa (Swagger)
+
+Com o servidor rodando, acesse:
+
+- **Swagger UI:** [`http://localhost:8080/docs`](http://localhost:8080/docs)
+- **OpenAPI JSON:** [`http://localhost:8080/docs/swagger.json`](http://localhost:8080/docs/swagger.json)
+
+O JSON pode ser importado em ferramentas como Postman, Insomnia ou [editor.swagger.io](https://editor.swagger.io).
 
 ### Exemplos com curl
 

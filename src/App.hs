@@ -5,27 +5,19 @@
 module App where
 
 import Control.Monad.Reader (runReaderT)
-import Network.Wai (Application)
-import Servant ((:>), ServerT, (:<|>)(..), Proxy(..), Context(..), serveWithContextT)
-import Servant.API.Experimental.Auth (AuthProtect)
-import Servant.Server.Experimental.Auth (AuthHandler, mkAuthHandler)
+import Network.Wai (Application, pathInfo)
+import Servant (ServerT, (:<|>)(..), Context(..), serveWithContextT)
+import Servant.Server.Experimental.Auth (mkAuthHandler)
 
 import Auth.Middleware (AuthUser, mkAuthMiddleware)
-import API.Auth (AuthAPI, authServer)
-import API.User (UserAPI, userServer)
-import API.Wallet (WalletAPI, walletServer)
-import API.Transaction (TransactionAPI, transactionServer)
+import API.Routes (API, api)
+import API.Auth (authServer)
+import API.User (userServer)
+import API.Wallet (walletServer)
+import API.Transaction (transactionServer)
+import API.Swagger (docsApp)
 import Config (Env(..))
 import Types.AppM (AppM)
-
-type API =
-  "api" :> (
-       (AuthProtect "jwt-auth" :> (UserAPI :<|> WalletAPI :<|> TransactionAPI))
-  :<|> AuthAPI
-  )
-
-api :: Proxy API
-api = Proxy
 
 mkApp :: Env -> Application
 mkApp env =
@@ -33,7 +25,10 @@ mkApp env =
       authHandler = mkAuthHandler (mkAuthMiddleware jwtSecret)
       context = authHandler :. EmptyContext
       nt appM = runReaderT appM env
-  in serveWithContextT api context nt server
+      servantApp = serveWithContextT api context nt server
+  in \req send -> case pathInfo req of
+       ("docs" : _) -> docsApp req send
+       _             -> servantApp req send
 
 server :: ServerT API AppM
 server =
