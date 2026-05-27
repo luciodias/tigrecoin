@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+w{-# LANGUAGE OverloadedStrings #-}
 
 module Database.Migrations where
 

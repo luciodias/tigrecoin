@@ -79,11 +79,11 @@ test-suite tigrecoin-test
   hs-source-dirs:   test
   build-depends:
      , tigrecoin
-     , case-insensitive ^>=1.2
-     , hspec            ^>=2.11
-     , hspec-wai        ^>=0.11
-     , QuickCheck       ^>=2.14
-     , wai-extra        ^>=3.1
+     , case-insensitive 
+     , hspec            
+     , hspec-wai        
+     , QuickCheck       
+     , wai-extra        
   other-modules:
     Helper
     Auth.JWTSpec
