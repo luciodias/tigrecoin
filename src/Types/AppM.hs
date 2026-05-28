@@ -2,7 +2,7 @@ module Types.AppM where
 
 import Control.Monad.Except (throwError)
 import Control.Monad.Reader (ReaderT, asks)
-import Control.Monad.Trans.Class (lift)
+import Control.Monad.Reader (lift)
 import Data.ByteString (ByteString)
 import Data.Pool (Pool)
 import Data.Time.Clock (NominalDiffTime)

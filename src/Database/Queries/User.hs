@@ -3,7 +3,6 @@
 module Database.Queries.User where
 
 import Control.Monad (void)
-import Data.Pool (withResource)
 import Data.Text (Text)
 import Data.UUID (UUID)
 import Database.PostgreSQL.Simple (Connection, Only(..), query, query_, execute, execute_)

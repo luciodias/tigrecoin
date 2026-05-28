@@ -4,7 +4,6 @@
 
 module API.Swagger (swaggerSpec, docsApp) where
 
-import Control.Lens ((.~), (?~), (&))
 import Data.ByteString.Lazy (ByteString)
 import Data.Proxy (Proxy(..))
 import Data.Swagger
@@ -30,16 +29,21 @@ import Models.Wallet (WalletResponse(..), DepositRequest(..), WithdrawRequest(..
 import Models.Transaction (TransactionResponse(..))
 
 stringSchema :: Schema
-stringSchema = mempty & S.type_ ?~ S.SwaggerString
+stringSchema = mempty
+  { S._schemaParamSchema = mempty { S._paramSchemaType = Just S.SwaggerString }
+  }
 
 numberSchema :: Schema
-numberSchema = mempty & S.type_ ?~ S.SwaggerNumber
+numberSchema = mempty
+  { S._schemaParamSchema = mempty { S._paramSchemaType = Just S.SwaggerNumber }
+  }
 
 objectSchema :: [(Text, Referenced Schema)] -> [S.ParamName] -> Schema
 objectSchema props reqs = mempty
-  & S.type_ ?~ S.SwaggerObject
-  & S.properties .~ IHM.fromList props
-  & S.required .~ reqs
+  { S._schemaParamSchema = mempty { S._paramSchemaType = Just S.SwaggerObject }
+  , S._schemaProperties = IHM.fromList props
+  , S._schemaRequired = reqs
+  }
 
 instance ToSchema RegisterRequest where
   declareNamedSchema _ = pure $ NamedSchema (Just "RegisterRequest")
@@ -112,12 +116,17 @@ swaggerApi :: Proxy SwaggerAPI
 swaggerApi = Proxy
 
 swaggerSpec :: Swagger
-swaggerSpec = toSwagger swaggerApi
-  & S.info . S.title   .~ "TigreCoin API"
-  & S.info . S.version .~ "0.1.0"
-  & S.info . S.description ?~ "Carteira digital - Prova de conceito"
-  & S.host ?~ "localhost:8080"
-  & S.basePath ?~ "/api"
+swaggerSpec = swagger
+  { S._swaggerHost = Just "localhost:8080"
+  , S._swaggerBasePath = Just "/api"
+  , S._swaggerInfo = (S._swaggerInfo swagger)
+      { S._infoTitle = "TigreCoin API"
+      , S._infoVersion = "0.1.0"
+      , S._infoDescription = Just "Carteira digital - Prova de conceito"
+      }
+  }
+  where
+    swagger = toSwagger swaggerApi
 
 swaggerJson :: ByteString
 swaggerJson = A.encode swaggerSpec
